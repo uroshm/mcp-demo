@@ -4,13 +4,7 @@ This is a small agent-facing [Model Context Protocol](https://modelcontextprotoc
 
 ## Capabilities
 
-- `get_pods(namespace)`: list Kubernetes pods.
-- `search_logs(service, query, namespace)`: search recent deployment logs.
-- `search_runbooks(problem)`: search Markdown runbooks.
 - `run_tests(module)`: run `pytest` for a path inside the configured test root.
-- `incident_investigation(service)`: reusable investigation prompt.
-
-The server deliberately has no arbitrary `run_command` tool. Kubernetes namespaces, filesystem paths, output size, and command duration are constrained server-side.
 
 ## Run locally
 
@@ -20,16 +14,28 @@ Python 3.10+ is required by the MCP SDK.
 uv run server.py
 ```
 
-Configure the safety boundary before connecting it to real systems:
+## Inspect with the MCP Inspector
+
+The official [MCP Inspector](https://github.com/modelcontextprotocol/inspector) provides a browser UI for connecting to this stdio server, listing its tools, and trying calls. It requires Node.js 22.19 or newer and `uv`.
+
+Launch it with:
 
 ```bash
-export MCP_ALLOWED_NAMESPACES=default,appointments
-export MCP_RUNBOOKS_DIR=/absolute/path/to/runbooks
+./scripts/inspect-mcp.sh
+```
+
+The first run downloads the Inspector through `npx`; it then prints the local URL to open in a browser. The Inspector launches `uv run server.py` from this checkout. To configure the test root for `run_tests`, export `MCP_TEST_ROOT` before launching:
+
+```bash
+MCP_TEST_ROOT=/absolute/path/to/project ./scripts/inspect-mcp.sh
+```
+
+For a direct stdio launch, configure the test root before connecting:
+
+```bash
 export MCP_TEST_ROOT=/absolute/path/to/project
 uv run server.py
 ```
-
-The Kubernetes tools use the current `kubectl` context. Override its executable with `MCP_KUBECTL_BIN` if needed.
 
 ## Configure an MCP host
 
@@ -40,13 +46,9 @@ The Kubernetes tools use the current `kubectl` context. Override its executable 
       "command": "uv",
       "args": ["--directory", "/absolute/path/to/mcp-demo", "run", "server.py"],
       "env": {
-        "MCP_ALLOWED_NAMESPACES": "default,appointments",
-        "MCP_RUNBOOKS_DIR": "/absolute/path/to/runbooks",
         "MCP_TEST_ROOT": "/absolute/path/to/project"
       }
     }
   }
 }
 ```
-
-For production, add authentication, authorization, audit logging, and approval workflows at the MCP deployment boundary as well as in individual tools.
