@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "engineering-mcp": {
+      "type": "local",
+      "command": ["uv", "--directory", "/Users/urosmilojkovic/git/mcp-demo", "run", "server.py"],
+      "enabled": true
+    }
+  }
+}
